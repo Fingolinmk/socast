@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Sonos, DeviceDiscovery } from 'sonos';
+import { Sonos, AsyncDeviceDiscovery } from 'sonos';
 
 @Injectable()
-export class PodcastService {
+export class SonosService {
   private readonly sonos: Sonos;
 
   constructor() {
@@ -19,10 +19,10 @@ export class PodcastService {
     }
   }
 
-  async getDevices(): Promise<[string]> {
-    const discovery = new DeviceDiscovery();
-    await discovery.discover().then((device, model) => {
-      return device + model;
-    });
-  }
+  async getDevices(): Promise<string[]> {
+    const discovery = new AsyncDeviceDiscovery();
+    const sonosDevices = await discovery.discoverMultiple();
+    const devices_ip: string[] = sonosDevices.map((device) => device.host);
+    return devices_ip;
+}
 }
