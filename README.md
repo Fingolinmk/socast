@@ -6,12 +6,17 @@ The goal of this repository is to create a service that enables users to play po
 
 ### Features
 
-- Sonos
-  ☑ Play podcasts on Sonos speakers using a user-defined URL.
+First, I want to build a backend that enables all of this:
+
+- Sonos:
+  - ☑ Play podcasts on Sonos speakers using a user-defined URL.
+  - ☑ Device discovery.
 - Podcasts
-  ☐ Sync podcast subscriptions with popular podcast apps (e.g., AntennaPod) for a unified podcast experience.
-  ☐ Control playback and manage podcast subscriptions through a user-friendly API.
-  ☐ Support for adding, updating, and deleting podcast subscriptions.
+  - ☐ Sync podcast subscriptions with popular podcast apps (e.g., AntennaPod) for a unified podcast experience.
+  - ☐ Control playback and manage podcast subscriptions through a user-friendly API.
+  - ☐ Support for adding, updating, and deleting podcast subscriptions.
+
+Based on that a UI with react or somethign similar will be developed.
 
 ## Getting Started
 
@@ -19,13 +24,13 @@ The goal of this repository is to create a service that enables users to play po
 
 Before you begin, ensure you have met the following requirements:
 
-    Node.js installed on your system.
-    npm (Node Package Manager) installed.
-    A Sonos sound system set up on your network.
+- Node.js installed on your system.
+- npm (Node Package Manager) installed.
+- A Sonos sound system set up on your network.
 
 ### Installation
 
-    Clone this repository to your local machine:
+Clone this repository to your local machine:
 
 ```
 git clone https://github.com/your-username/podcast-player-service.git
@@ -44,8 +49,6 @@ npm install
 ```
 
 Start the podcast player service:
-
-bash
 
     npm start
 
