@@ -1,7 +1,7 @@
-import { Controller, Post,Get, Body } from '@nestjs/common';
+import { Controller, Post, Get, Body } from '@nestjs/common';
 import { SonosService } from './sonos.service';
 
-@Controller('podcast')
+@Controller('sonos')
 export class SonosController {
   constructor(private readonly podcastService: SonosService) {}
 
@@ -13,6 +13,18 @@ export class SonosController {
     return this.podcastService.playPodcast(url);
   }
 
+  @Post('active_device')
+  async set_device(@Body() body: { url: string }): Promise<string> {
+    //    const { url } = body;
+    this.podcastService.setActiveDevice(body.url);
+    return this.podcastService.getActiveDevice();
+  }
+
+  @Get('active_device')
+  async get_device(): Promise<string> {
+    //    const { url } = body;
+    return this.podcastService.getActiveDevice();
+  }
   @Get('devices')
   async devices(): Promise<string[]> {
     return this.podcastService.getDevices();
