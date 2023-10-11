@@ -3,7 +3,7 @@ import { Sonos, AsyncDeviceDiscovery } from 'sonos';
 
 @Injectable()
 export class SonosService {
-  private readonly sonos: Sonos;
+  private sonos: Sonos;
 
   constructor() {
     this.sonos = new Sonos('192.168.178.53');
@@ -24,5 +24,11 @@ export class SonosService {
     const sonosDevices = await discovery.discoverMultiple();
     const devices_ip: string[] = sonosDevices.map((device) => device.host);
     return devices_ip;
-}
+  }
+  async setActiveDevice(deviceIP: string) {
+    this.sonos = new Sonos(deviceIP);
+  }
+  async getActiveDevice(): Promise<string> {
+    return this.sonos.host;
+  }
 }
