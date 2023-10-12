@@ -15,18 +15,18 @@ export class SonosController {
 
   @Post('active_device')
   async set_device(@Body() body: { url: string }): Promise<string> {
-    //    const { url } = body;
     this.podcastService.setActiveDevice(body.url);
     return this.podcastService.getActiveDevice();
   }
 
   @Get('active_device')
   async get_device(): Promise<string> {
-    //    const { url } = body;
     return this.podcastService.getActiveDevice();
   }
   @Get('devices')
-  async devices(): Promise<string[]> {
+  async devices(): Promise<
+    { name: string; groupname: string; uuid: string }[]
+  > {
     return this.podcastService.getDevices();
   }
 }
