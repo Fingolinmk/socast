@@ -4,6 +4,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    restart: always
     ports:
       - "3000:3000"  
     depends_on:
@@ -12,6 +13,8 @@ services:
     image: gpodder2go
     ports:
     - "3005:3005"
+    volumes:
+      - ./gpodder/g2g.db:/gpodder2go/g2g.db
   frontend:
     build:
       context: ./frontend

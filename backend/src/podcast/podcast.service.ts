@@ -1,32 +1,37 @@
 import { Injectable } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
-import { parseString } from 'xml2js';
+import { Parser } from 'xml2js';
 
 @Injectable()
 export class PodcastService {
   private client: AxiosInstance;
-  private sessionCookie: string = ''; // Initialize sessionCookie
+  private sessionCookie: string = ''; 
 
   constructor() {
     this.client = axios.create();
   }
 
-  xmlToJSON(xml: string): string {
-    try {
-      let result: string = '';  
-      parseString(xml, (err, data) => {
+  parseXmlToObjects(xmlData):Promise<any> {
+    return new Promise((resolve, reject) => {
+      const parser = new Parser();
+      parser.parseString(xmlData, (err, result) => {
         if (err) {
-          result = "Error";
+          reject(err);
         } else {
-          result = JSON.stringify(data, null, 2);
+          const subscriptions = result.opml.body[0].outline.map((item) => {
+            return {
+              text: item.$.text,
+              type: item.$.type,
+              url: item.$.xmlUrl,
+            };
+          });
+          resolve(subscriptions);
         }
       });
-  
-      return result;
-    } catch (error) {
-      return "Error";
-    }
+    });
   }
+  
+  
   
 
   async login( username: string, password: string ) {
@@ -90,8 +95,7 @@ export class PodcastService {
       );
 
       if (response.status === 200) {
-        console.log('subscriptions:', response.data);
-        return this.xmlToJSON(response.data);
+        return this.parseXmlToObjects(response.data);
       }
     } catch (error) {
       console.error('Failed to retrieve subscriptions:', error);
