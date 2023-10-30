@@ -18,7 +18,7 @@ WORKDIR /gpodder2go
 COPY --from=builder /build/gpodder2go /gpodder2go/
 
 # Run the gpodder2go binary
+RUN ./gpodder2go init
+RUN ./gpodder2go accounts create moritz --email=Moritz.Kempkes@outlook.com --name="moritz" --password="password"
 CMD ["sh", "-c", "VERIFIER_SECRET_KEY=hamilton ./gpodder2go -b 0.0.0.0:3005 serve"]
 #-> need to init the DB once
-#RUN ./gpodder2go init
-#RUN ./gpodder2go accounts create moritz --email=Moritz.Kempkes@outlook.com --name="moritz" --password="password"

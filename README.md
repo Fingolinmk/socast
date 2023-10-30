@@ -4,8 +4,11 @@
 ### `docker-compose -f docker-compose.yml -f docker-compose.develop.yml up --build`
 
 ## Next steps
-- [ ] Dockerize
-    - [ ] Gpodder2go database volume
+- [x] Dockerize
+    - [x] Gpodder2go database volume
+    - [ ] fix startup behaviour (database init)
+- [ ] Provide Subscripions
+- [ ] Clean UI
 - [ ] Read RSS Feed as feed and provide Episodes
 - [ ] Proper User Management
 
