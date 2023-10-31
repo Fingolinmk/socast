@@ -29,16 +29,17 @@ function App() {
   const [devices, setDevices] = useState<SonosDevice[]>([]);
   const [subscriptions, setSubscriptions] = useState<subscriptions[]>([]);
   const [currentSubscription, setCurrentSubscription] = useState("0");
-
+  const [subscriptionTitel, setCurrentSubscriptionTitel] = useState(" ");
   const items: MenuItem[] = subscriptions.map((subscription, index) => ({
     key: index,
     label: subscription.text,
-    children: [],
-    icon: <div />,
+    //icon: <MailOutlined />,
   }));
   const onMenuClick: MenuProps["onClick"] = (e) => {
-    console.log("Click");
+    const index: number = +e.key;
     setCurrentSubscription(e.key);
+    setCurrentSubscriptionTitel(subscriptions[index].text);
+    //TODO: Hier korrekte episoden aus dem BE holen
   };
 
   const handleDeviceSelectionChange = (selected: string[]) => {
@@ -48,13 +49,10 @@ function App() {
     });
     const apiUrl = "http://localhost:3000/sonos/join_device";
     const res = axios.post(apiUrl, { devices: active_devices });
-    console.log(res);
   };
   const handlePlay = (item: PodcastDescription) => {
-    console.log("input", item.path);
     const apiUrl = "http://localhost:3000/sonos/play";
     const res = axios.post(apiUrl, { url: item.path });
-    console.log(res);
   };
 
   useEffect(() => {
@@ -122,7 +120,7 @@ function App() {
             selectedKeys={[currentSubscription]}
             items={items}
             onClick={onMenuClick}
-          />
+          ></Menu>
         </Sider>
         <Content style={{ padding: "0 10px" }}>
           <List
@@ -130,6 +128,7 @@ function App() {
             header={
               <div>
                 <h1>Podcast Episodes</h1>
+                <h3>{subscriptionTitel}</h3>
               </div>
             }
             footer={<div>Footer</div>}
