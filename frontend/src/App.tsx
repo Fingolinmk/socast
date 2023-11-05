@@ -5,7 +5,6 @@ import { PlayCircleOutlined, CustomerServiceOutlined } from "@ant-design/icons";
 import { Content, Footer, Header } from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
 import "./App.css";
-import { Url } from "url";
 import type { MenuProps } from "antd/es/menu";
 type MenuItem = Required<MenuProps>["items"][number];
 
@@ -18,28 +17,54 @@ interface SonosDevice {
   groupname: string;
   uuid: string;
 }
-interface subscriptions {
+interface subscription {
   text: string;
   type: string;
-  url: Url;
+  url: string;
+  id: number;
 }
 
 function App() {
   const [podcasts, setPodcasts] = useState<PodcastDescription[]>([]);
   const [devices, setDevices] = useState<SonosDevice[]>([]);
-  const [subscriptions, setSubscriptions] = useState<subscriptions[]>([]);
+  const [subscriptions, setSubscriptions] = useState<subscription[]>([]);
   const [currentSubscription, setCurrentSubscription] = useState("0");
-  const [subscriptionTitel, setCurrentSubscriptionTitel] = useState(" ");
+  const [selectedSubScription, setSelectedSubScription] =
+    useState<subscription>({
+      text: "",
+      type: "",
+      url: "",
+      id: 0,
+    });
   const items: MenuItem[] = subscriptions.map((subscription, index) => ({
     key: index,
     label: subscription.text,
     //icon: <MailOutlined />,
   }));
+  const setEpisodes = () => {
+    const apiUrl =
+      "http://localhost:3000/podcast/episodes/" + selectedSubScription.id;
+    axios
+      .get(apiUrl)
+      .then((response: { status: number; data: any }) => {
+        if (response.status !== 200) {
+          throw new Error("Network response was not ok");
+        }
+        return response.data;
+      })
+      .then((responsepodcasts: any) => {
+        setPodcasts(responsepodcasts);
+      })
+      .catch((error: any) => {
+        console.error("Error fetching podcasts:", error);
+      });
+  };
   const onMenuClick: MenuProps["onClick"] = (e) => {
     const index: number = +e.key;
     setCurrentSubscription(e.key);
-    setCurrentSubscriptionTitel(subscriptions[index].text);
-    //TODO: Hier korrekte episoden aus dem BE holen
+    setSelectedSubScription(subscriptions[index]);
+
+    setEpisodes();
   };
 
   const handleDeviceSelectionChange = (selected: string[]) => {
@@ -56,21 +81,7 @@ function App() {
   };
 
   useEffect(() => {
-    const apiUrl = "http://localhost:3000/podcast/episodes";
-    axios
-      .get(apiUrl)
-      .then((response: { status: number; data: any }) => {
-        if (response.status !== 200) {
-          throw new Error("Network response was not ok");
-        }
-        return response.data;
-      })
-      .then((responsepodcasts: any) => {
-        setPodcasts(responsepodcasts);
-      })
-      .catch((error: any) => {
-        console.error("Error fetching podcasts:", error);
-      });
+    setEpisodes();
   }, []);
 
   useEffect(() => {
@@ -128,7 +139,7 @@ function App() {
             header={
               <div>
                 <h1>Podcast Episodes</h1>
-                <h3>{subscriptionTitel}</h3>
+                <h3>{selectedSubScription.text}</h3>
               </div>
             }
             footer={<div>Footer</div>}
