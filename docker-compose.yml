@@ -1,5 +1,11 @@
 version: '3'
 services:
+  gpodder-service:
+    image: gpodder2go
+    ports:
+    - "3005:3005"
+    volumes:
+      - ./gpodder/g2g.db:/gpodder2go/g2g.db
   backend:
     build:
       context: ./backend
@@ -9,12 +15,9 @@ services:
       - "3000:3000"  
     depends_on:
       - gpodder-service
-  gpodder-service:
-    image: gpodder2go
-    ports:
-    - "3005:3005"
     volumes:
-      - ./gpodder/g2g.db:/gpodder2go/g2g.db
+      - ./backend:/app
+      - /app/node_modules
   frontend:
     build:
       context: ./frontend
@@ -22,4 +25,7 @@ services:
     ports:
       - "3001:3001"
     depends_on:
-      - backend 
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules

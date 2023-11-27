@@ -2,12 +2,19 @@ import { Url } from "url";
 
 export interface PodcastDescription {
     name: string;
-    path: string;
+    url: string;
+    imageUrl: string;
+    description: string;
   }
-export  interface subscriptions {
+export interface Subscriptions {
     name: string;
-    type: string;
     url: Url;
     id: number
   }
   
+  export interface podcastRssResponse {
+    title: string;
+    items: PodcastDescription[];
+    image: string;
+    description: string
+  }

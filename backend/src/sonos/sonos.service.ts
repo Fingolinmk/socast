@@ -12,11 +12,9 @@ export class SonosService {
     .then(() => {
       this.manager.Devices.forEach(d => console.log('Device %s (%s) is joined in %s', d.Name,d.Uuid,  d.GroupName))
     })
-   // this.manager.Devices.forEach(d => console.log(d.GetZoneInfo))
   }
 
   async playPodcast(url: string): Promise<string> {
-    console.log("sonos.service.ts: podcast url:", url)
     try {
       this.activeDevice.PlayNotification({ trackUri: url });
       return `Playing podcast from URL: ${url}`;

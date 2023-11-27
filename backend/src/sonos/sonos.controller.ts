@@ -7,10 +7,8 @@ export class SonosController {
 
   @Post('play')
   async play(@Body() body: { url: string }): Promise<string> {
-    console.log(body)
     if (body.url !== "")
     {
-      console.log("url from body")
       return this.podcastService.playPodcast(body.url)
     }
     else
@@ -30,15 +28,11 @@ export class SonosController {
 
     const active_device=await this.podcastService.getActiveDevice()
     let devices = body.devices;
-    console.log("device[0], active device")
-    console.log(devices[0])
-    console.log(active_device)
+
     if (devices[0] == active_device){
-      console.log("Active Device should not be changed")
     }
     else
     {
-      console.log("SETTING ACTIVE DEVICE TO ", devices[0])
       await this.podcastService.setActiveDevice(devices[0]);
     }
     devices=body.devices.slice(1);
@@ -48,10 +42,6 @@ export class SonosController {
           if(active_device != device){
             console.log("joining: ", device)
             this.podcastService.joinDeviceWithActiveDevice(device)
-          }
-          else
-          {
-            console.log("not joining with myself")
           }
         });
       }

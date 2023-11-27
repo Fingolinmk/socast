@@ -1,47 +1,44 @@
+"use client";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { List, Button, Select, Layout, Menu } from "antd";
 import { PlayCircleOutlined, CustomerServiceOutlined } from "@ant-design/icons";
-import { Content, Footer, Header } from "antd/es/layout/layout";
+import { Content, Footer } from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
-import "./App.css";
+import "./globals.css";
 import type { MenuProps } from "antd/es/menu";
+import {
+  PodcastDescription,
+  SonosDevice,
+  SubscriptionDetail,
+  Subscription,
+} from "../types";
+import Paragraph from "antd/es/typography/Paragraph";
+import PodcastHero from "./episodeHero";
 type MenuItem = Required<MenuProps>["items"][number];
 
-interface PodcastDescription {
-  name: string;
-  path: string;
-}
-interface SonosDevice {
-  name: string;
-  groupname: string;
-  uuid: string;
-}
-interface subscription {
-  text: string;
-  type: string;
-  url: string;
-  id: number;
-}
-
-function App() {
+export default function App() {
   const [podcasts, setPodcasts] = useState<PodcastDescription[]>([]);
   const [devices, setDevices] = useState<SonosDevice[]>([]);
-  const [subscriptions, setSubscriptions] = useState<subscription[]>([]);
-  const [currentSubscription, setCurrentSubscription] = useState("0");
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [selectedSubScription, setSelectedSubScription] =
-    useState<subscription>({
+    useState<SubscriptionDetail>({
       text: "",
-      type: "",
       url: "",
+      description: "",
+      image: "",
       id: 0,
     });
-  const items: MenuItem[] = subscriptions.map((subscription, index) => ({
-    key: index,
-    label: subscription.text,
-    //icon: <MailOutlined />,
-  }));
-  const setEpisodes = () => {
+
+  const items: MenuItem[] =
+    subscriptions.length > 0
+      ? subscriptions.map((subscription, index) => ({
+          key: index,
+          label: subscription.text,
+        }))
+      : [];
+
+  const setEpisodes = (index: number) => {
     const apiUrl =
       "http://localhost:3000/podcast/episodes/" + selectedSubScription.id;
     axios
@@ -53,7 +50,14 @@ function App() {
         return response.data;
       })
       .then((responsepodcasts: any) => {
-        setPodcasts(responsepodcasts);
+        setPodcasts(responsepodcasts.items);
+        setSelectedSubScription({
+          id: index,
+          url: "",
+          text: responsepodcasts.title,
+          description: responsepodcasts.description,
+          image: responsepodcasts.image,
+        });
       })
       .catch((error: any) => {
         console.error("Error fetching podcasts:", error);
@@ -61,10 +65,7 @@ function App() {
   };
   const onMenuClick: MenuProps["onClick"] = (e) => {
     const index: number = +e.key;
-    setCurrentSubscription(e.key);
-    setSelectedSubScription(subscriptions[index]);
-
-    setEpisodes();
+    setEpisodes(index);
   };
 
   const handleDeviceSelectionChange = (selected: string[]) => {
@@ -77,12 +78,9 @@ function App() {
   };
   const handlePlay = (item: PodcastDescription) => {
     const apiUrl = "http://localhost:3000/sonos/play";
-    const res = axios.post(apiUrl, { url: item.path });
+    console.log("play: ", item.url);
+    const res = axios.post(apiUrl, { url: item.url });
   };
-
-  useEffect(() => {
-    setEpisodes();
-  }, []);
 
   useEffect(() => {
     const apiUrl = "http://localhost:3000/podcast/subscriptions";
@@ -95,6 +93,7 @@ function App() {
         return response.data;
       })
       .then((responsepodcasts: any) => {
+        console.log("response: ", responsepodcasts);
         setSubscriptions(responsepodcasts);
       })
       .catch((error: any) => {
@@ -121,51 +120,40 @@ function App() {
   }, []);
 
   return (
-    <Layout>
-      <Header className="my-header">
-        <h1>SOCAST</h1>
-      </Header>
-      <Layout style={{ padding: "10px 0" }}>
-        <Sider style={{ width: 500 }}>
-          <Menu
-            selectedKeys={[currentSubscription]}
-            items={items}
-            onClick={onMenuClick}
-          ></Menu>
-        </Sider>
-        <Content style={{ padding: "0 10px" }}>
-          <List
-            size="large"
-            header={
-              <div>
-                <h1>Podcast Episodes</h1>
-                <h3>{selectedSubScription.text}</h3>
-              </div>
-            }
-            footer={<div>Footer</div>}
-            bordered
-            dataSource={podcasts}
-            renderItem={(item) => (
-              <List.Item>
-                <List.Item.Meta
-                  avatar={<CustomerServiceOutlined />}
-                  title={item.name}
-                  description={item.path}
-                />
+    <Layout style={{ padding: "10px 0" }}>
+      <Sider style={{ width: 500 }} theme="light">
+        <Menu items={items} onClick={onMenuClick} />
+      </Sider>
+      <Content style={{ padding: "0 10px" }}>
+        <List
+          size="large"
+          header={PodcastHero(selectedSubScription)}
+          footer={<div>Footer</div>}
+          bordered
+          dataSource={podcasts}
+          renderItem={(item: PodcastDescription) => (
+            <List.Item>
+              <List.Item.Meta
+                avatar={<CustomerServiceOutlined />}
+                title={item.name}
+                description={
+                  <Paragraph ellipsis={true}>{item.description}</Paragraph>
+                }
+              />
 
-                <div>
-                  <Button
-                    type="default"
-                    shape="circle"
-                    icon={<PlayCircleOutlined />}
-                    onClick={() => handlePlay(item)}
-                  />
-                </div>
-              </List.Item>
-            )}
-          />
-        </Content>
-      </Layout>
+              <div>
+                <Button
+                  type="default"
+                  shape="circle"
+                  icon={<PlayCircleOutlined />}
+                  onClick={() => handlePlay(item)}
+                />
+              </div>
+            </List.Item>
+          )}
+        />
+      </Content>
+
       <Footer
         style={{
           borderTop: "1px solid #e8e8e8",
@@ -190,5 +178,3 @@ function App() {
     </Layout>
   );
 }
-
-export default App;
