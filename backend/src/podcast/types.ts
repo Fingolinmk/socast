@@ -1,20 +1,20 @@
-import { Url } from "url";
+import { Url } from 'url';
 
 export interface PodcastDescription {
-    name: string;
-    url: string;
-    imageUrl: string;
-    description: string;
-  }
-export interface Subscriptions {
-    name: string;
-    url: Url;
-    id: number
-  }
-  
-  export interface podcastRssResponse {
-    title: string;
-    items: PodcastDescription[];
-    image: string;
-    description: string
-  }
+  name: string;
+  url: string;
+  imageUrl: string;
+  description: string;
+}
+export interface Subscription {
+  id: number;
+  url: string;
+  text: string;
+}
+
+export interface podcastRssResponse {
+  title: string;
+  items: PodcastDescription[];
+  image: string;
+  description: string;
+}

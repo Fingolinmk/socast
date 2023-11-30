@@ -1,34 +1,19 @@
 "use client";
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { List, Button, Select, Layout, Menu } from "antd";
-import { PlayCircleOutlined, CustomerServiceOutlined } from "@ant-design/icons";
+import { Select, Layout, Menu } from "antd";
 import { Content, Footer } from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
 import "./globals.css";
 import type { MenuProps } from "antd/es/menu";
-import {
-  PodcastDescription,
-  SonosDevice,
-  SubscriptionDetail,
-  Subscription,
-} from "../types";
-import Paragraph from "antd/es/typography/Paragraph";
-import PodcastHero from "./episodeHero";
+import { SonosDevice, Subscription } from "../types";
+import axios from "axios";
+import PodcastList from "@/podcastList";
 type MenuItem = Required<MenuProps>["items"][number];
 
 export default function App() {
-  const [podcasts, setPodcasts] = useState<PodcastDescription[]>([]);
   const [devices, setDevices] = useState<SonosDevice[]>([]);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [selectedSubScription, setSelectedSubScription] =
-    useState<SubscriptionDetail>({
-      text: "",
-      url: "",
-      description: "",
-      image: "",
-      id: 0,
-    });
+  const [episodeIndex, setEpisodeIndex] = useState<number>(-1);
 
   const items: MenuItem[] =
     subscriptions.length > 0
@@ -38,34 +23,9 @@ export default function App() {
         }))
       : [];
 
-  const setEpisodes = (index: number) => {
-    const apiUrl =
-      "http://localhost:3000/podcast/episodes/" + selectedSubScription.id;
-    axios
-      .get(apiUrl)
-      .then((response: { status: number; data: any }) => {
-        if (response.status !== 200) {
-          throw new Error("Network response was not ok");
-        }
-        return response.data;
-      })
-      .then((responsepodcasts: any) => {
-        setPodcasts(responsepodcasts.items);
-        setSelectedSubScription({
-          id: index,
-          url: "",
-          text: responsepodcasts.title,
-          description: responsepodcasts.description,
-          image: responsepodcasts.image,
-        });
-      })
-      .catch((error: any) => {
-        console.error("Error fetching podcasts:", error);
-      });
-  };
   const onMenuClick: MenuProps["onClick"] = (e) => {
     const index: number = +e.key;
-    setEpisodes(index);
+    setEpisodeIndex(index);
   };
 
   const handleDeviceSelectionChange = (selected: string[]) => {
@@ -75,11 +35,6 @@ export default function App() {
     });
     const apiUrl = "http://localhost:3000/sonos/join_device";
     const res = axios.post(apiUrl, { devices: active_devices });
-  };
-  const handlePlay = (item: PodcastDescription) => {
-    const apiUrl = "http://localhost:3000/sonos/play";
-    console.log("play: ", item.url);
-    const res = axios.post(apiUrl, { url: item.url });
   };
 
   useEffect(() => {
@@ -102,6 +57,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    console.log("getting devices");
     const apiUrl = "http://localhost:3000/sonos/devices";
     axios
       .get(apiUrl)
@@ -115,7 +71,7 @@ export default function App() {
         setDevices(responseDevices);
       })
       .catch((error: any) => {
-        console.error("Error fetching podcasts:", error);
+        console.error("Error getting devices:", error);
       });
   }, []);
 
@@ -125,33 +81,7 @@ export default function App() {
         <Menu items={items} onClick={onMenuClick} />
       </Sider>
       <Content style={{ padding: "0 10px" }}>
-        <List
-          size="large"
-          header={PodcastHero(selectedSubScription)}
-          footer={<div>Footer</div>}
-          bordered
-          dataSource={podcasts}
-          renderItem={(item: PodcastDescription) => (
-            <List.Item>
-              <List.Item.Meta
-                avatar={<CustomerServiceOutlined />}
-                title={item.name}
-                description={
-                  <Paragraph ellipsis={true}>{item.description}</Paragraph>
-                }
-              />
-
-              <div>
-                <Button
-                  type="default"
-                  shape="circle"
-                  icon={<PlayCircleOutlined />}
-                  onClick={() => handlePlay(item)}
-                />
-              </div>
-            </List.Item>
-          )}
-        />
+        {PodcastList(episodeIndex)}
       </Content>
 
       <Footer

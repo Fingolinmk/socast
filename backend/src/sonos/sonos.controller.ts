@@ -1,4 +1,11 @@
-import { Controller, Post, Get, Body, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { SonosService } from './sonos.service';
 
 @Controller('sonos')
@@ -7,15 +14,13 @@ export class SonosController {
 
   @Post('play')
   async play(@Body() body: { url: string }): Promise<string> {
-    if (body.url !== "")
-    {
-      return this.podcastService.playPodcast(body.url)
+    if (body.url !== '') {
+      return this.podcastService.playPodcast(body.url);
+    } else {
+      return this.podcastService.playPodcast(
+        'https://download.deutschlandfunk.de/file/dradio/2023/09/27/der_tag_270923_dlf_20230927_1700_af1801b7.mp3',
+      );
     }
-    else
-    {
-      return this.podcastService.playPodcast('https://download.deutschlandfunk.de/file/dradio/2023/09/27/der_tag_270923_dlf_20230927_1700_af1801b7.mp3')
-
-    }     
   }
 
   @Post('active_device')
@@ -25,27 +30,22 @@ export class SonosController {
   }
   @Post('join_device')
   async join_device(@Body() body: { devices: string[] }): Promise<void> {
-
-    const active_device=await this.podcastService.getActiveDevice()
+    const active_device = await this.podcastService.getActiveDevice();
     let devices = body.devices;
 
-    if (devices[0] == active_device){
-    }
-    else
-    {
+    if (devices[0] == active_device) {
+    } else {
       await this.podcastService.setActiveDevice(devices[0]);
     }
-    devices=body.devices.slice(1);
+    devices = body.devices.slice(1);
 
-    devices.forEach(device =>
-        {
-          if(active_device != device){
-            console.log("joining: ", device)
-            this.podcastService.joinDeviceWithActiveDevice(device)
-          }
-        });
+    devices.forEach((device) => {
+      if (active_device != device) {
+        console.log('joining: ', device);
+        this.podcastService.joinDeviceWithActiveDevice(device);
       }
-  
+    });
+  }
 
   @Get('active_device')
   async get_device(): Promise<string> {

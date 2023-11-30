@@ -6,4 +6,4 @@ import { SonosService } from './sonos.service';
   controllers: [SonosController],
   providers: [SonosService],
 })
-export class SonosModule { }
+export class SonosModule {}
