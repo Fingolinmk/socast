@@ -58,7 +58,7 @@ export default function Page() {
   };
 
   const back = () => {
-    console.log(router.back());
+    router.back();
   };
 
   const onFinish = (values: FieldType) => {

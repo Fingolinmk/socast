@@ -27,7 +27,7 @@ export default function Layout({ children }) {
     ];
 
     const onChange = (key: string) => {
-        console.log(key);
+        console.log("key: ", key);
 
         router.push(`/start/${key}`);
 

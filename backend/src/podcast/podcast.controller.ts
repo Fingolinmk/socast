@@ -19,13 +19,19 @@ export class PodcastController {
   async getSubscriptions(@Query('username') username: string,
     @Query('sessionToken') sessionToken: string,)
     : Promise<Subscription[]> {
-    console.log("SUBSCRIPTIONS: user: ", username, "sessionToken: ", sessionToken);
-
     return this.podcastService.getSubcriptions(username, sessionToken);
   }
-  @Get('episodes/:id')
+  @Get('episodes/byid/:id')
   getEpisodes(@Param('id') id: number): Promise<podcastRssResponse> {
+    console.log("GET EPISODES BY ID")
     const episodes = this.podcastService.getEpisodesByID(id);
     return episodes;
   }
+  @Get('episodes/byUrl')
+  getEpisodesByUrl(@Query('url') url: string): Promise<podcastRssResponse> {
+    console.log("GET EPISODES BY URL!", url)
+    const episodes = this.podcastService.getEpisodesByURL(url);
+    return episodes;
+  }
+
 }

@@ -14,6 +14,7 @@ export default function PodcastHero(hero: SubscriptionDetail) {
         </Col>
         <Col span={15}>
           <Paragraph>{hero.description}</Paragraph>
+          <div>URL: {hero.url}</div>
         </Col>
       </Row>
     </div>

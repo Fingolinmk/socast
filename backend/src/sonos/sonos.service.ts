@@ -13,7 +13,6 @@ export class SonosService {
       this.manager = new SonosManager();
       this.manager
         .InitializeFromDevice(host)
-        .then(console.log)
         .then(() => {
           this.manager.Devices.forEach((d) =>
             console.log(

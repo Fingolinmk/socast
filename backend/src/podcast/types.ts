@@ -1,4 +1,3 @@
-import { Url } from 'url';
 
 export interface PodcastDescription {
   name: string;
@@ -9,7 +8,7 @@ export interface PodcastDescription {
 export interface Subscription {
   id: number;
   url: string;
-  text: string;
+  title: string;
 }
 
 export interface podcastRssResponse {

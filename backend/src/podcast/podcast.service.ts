@@ -9,8 +9,8 @@ let rssparser = new RssParser();
 @Injectable()
 export class PodcastService {
   private client: AxiosInstance;
-  //  private sessionCookie: string = '';
-  private subscriptions: Subscription[] = [];
+  private cache: Subscription[] = []; // TODO -> database
+  private subscriptions: Subscription[] = []; // This is ugly (and will not work for multiple users)
   constructor() {
     this.client = axios.create();
   }
@@ -27,45 +27,109 @@ export class PodcastService {
   }
   async getTitleFrom(url): Promise<string> {
     try {
-      const response = await axios.get(url);
-      const data = (await this.parseXml(response.data)) as any;
-      console.log(data.rss.channel.title)
-      return data.rss.channel.title;
-    } catch (error) {
+      const results = await rssparser.parseURL(url);
+      return results.title
+    }
+    catch (error) {
       console.error(`Error fetching or parsing XML for ${url}:`, error.message);
+      return '~Could not find title~';
     }
   }
-  async parseSubscriptions(subscriptions: string[]): Promise<Subscription[]> {
-    this.subscriptions = await Promise.all(
-      subscriptions.map(async (elm, index) => {
-        return { text: await this.getTitleFrom(elm), url: elm, id: index };
-      }),
-    );
-    return this.subscriptions;
-  }
+  async parseSubscriptions(subscription_urls: string[]): Promise<Subscription[]> {
+    console.log("parsing subscriptions: ", subscription_urls);
+    console.log("number of subscriptions: ", subscription_urls.length);
 
+    const return_me: Subscription[] = await Promise.all(
+      subscription_urls.map(async (url, index) => {
+        const elm_in_cache = this.cache.filter((cache) => cache.url === url);
+
+        if (elm_in_cache.length < 1 || elm_in_cache[0].title === "~Could not find title~") {
+          const title = await this.getTitleFrom(url)
+          const new_elm: Subscription = { title: title, url: url, id: index };
+          console.log("adding new element to cache: ", new_elm);
+          this.cache.push(new_elm);
+
+          return new_elm;
+        } else {
+          const elm = elm_in_cache[0];
+          elm.id = index;
+          console.log("adding element FROM cache: ", elm_in_cache[0]);
+
+          return elm;
+        }
+      })
+    );
+
+    console.log("returning: ", return_me);
+    console.log("cache: ", this.cache);
+    console.log("done");
+    return return_me;
+  }
+  async parseSubscriptions_old(subscription_urls: string[]): Promise<Subscription[]> {
+    console.log("parsing subscriptions: ", subscription_urls)
+    console.log("number of subscriptions: ", subscription_urls.length)
+    const return_me: Subscription[] = []
+    subscription_urls.forEach(async (url, index) => {
+      const elm_in_cache = this.cache.filter(
+        (cache) => cache.url == url,
+      )
+      if (elm_in_cache.length < 1) {
+        const new_elm = { title: await this.getTitleFrom(url), url: url, id: index }
+        console.log("adding new element to cache: ", new_elm)
+        this.cache.push(new_elm)
+        return_me.push(new_elm)
+        console.log(return_me.length, " / ", subscription_urls.length)
+      }
+      else {
+        const elm = elm_in_cache[0]
+        elm.id = index
+        return_me.push(elm_in_cache[0])
+        console.log("adding element FROM cache: ", elm_in_cache[0])
+        console.log(return_me.length, " / ", subscription_urls.length)
+      }
+
+    });
+    console.log("returning: ", return_me)
+    console.log("cache: ", this.cache)
+    console.log("done")
+    return return_me
+
+
+
+    /* this.subscriptions = await Promise.all(
+       subscription_urls.map(async (elm, index) => {
+         const title = await this.getTitleFrom(elm);
+         return { text: title, url: elm, id: index };
+       }),
+     );
+     return this.subscriptions;
+     */
+  }
+  async getEpisodesByURL(url: string): Promise<podcastRssResponse> {
+    try {
+      const results = await rssparser.parseURL(url);
+      const result_typed: podcastRssResponse = {
+        title: results.title,
+        image: results.image.url,
+        items: results.items.map((itm) => ({
+          name: itm.title,
+          url: itm.enclosure.url || '',
+          description: itm.contentSnippet || '',
+        })) as PodcastDescription[],
+
+        description: results.description,
+      };
+      return result_typed;
+    } catch (error) {
+      console.log('error in getEpisodebyID: ', error);
+    }
+  }
   async getEpisodesByID(id: number): Promise<podcastRssResponse> {
     const findings = this.subscriptions.filter(
       (subscriptions) => subscriptions.id == id,
     );
     if (findings.length == 1) {
-      try {
-        const results = await rssparser.parseURL(findings[0].url);
-        const result_typed: podcastRssResponse = {
-          title: results.title,
-          image: results.image.url,
-          items: results.items.map((itm) => ({
-            name: itm.title,
-            url: itm.enclosure.url || '',
-            description: itm.contentSnippet || '',
-          })) as PodcastDescription[],
-
-          description: results.description,
-        };
-        return result_typed;
-      } catch (error) {
-        console.log('error in getEpisodebyID: ', error);
-      }
+      return this.getEpisodesByURL(findings[0].url)
     } else {
       console.log('multiple findings: ', findings);
     }
@@ -99,7 +163,7 @@ export class PodcastService {
   }
   async getDevices(username: string, sessionToken: string) {
     try {
-      const address = addresses.gpodder + '/api/2/devices/${username}.json';
+      const address = addresses.gpodder + `/api/2/devices/${username}.json`;
       const response = await this.client.get(address, {
         headers: {
           Cookie: sessionToken,
