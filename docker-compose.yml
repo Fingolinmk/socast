@@ -1,11 +1,5 @@
 version: '3'
 services:
-  #gpodder-service:
-  #  image: gpodder2go
-  #  ports:
-  #  - "3005:3005"
-  #  volumes:
-  #    - ./gpodder/g2g.db:/gpodder2go/g2g.db
   gpodder-service:
     container_name: gPodder
     build:
@@ -14,8 +8,8 @@ services:
     volumes:
       - type: bind
         source: ./micro-gpodder-server/docker_volume/data.sqlite
-        target: /var/www/html/data.sqlite:Z         # `:Z`` is important
-    hostname: 192.168.178.27
+        target: /var/www/html/data.sqlite:Z # `:Z`` is important
+    hostname: 192.168.178.70 # 192.168.178.27
     ports:
       - 3005:80
 
@@ -25,7 +19,7 @@ services:
       dockerfile: Dockerfile
     restart: always
     ports:
-      - "3000:3000"  
+      - "3000:3000"
     depends_on:
       - gpodder-service
     volumes:

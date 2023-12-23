@@ -3,24 +3,27 @@ import { useState, useEffect } from "react";
 import { Select, Layout, Menu } from "antd";
 import { Content, Footer } from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
-import "./globals.css";
 import type { MenuProps } from "antd/es/menu";
-import { SonosDevice, Subscription } from "../types";
+import { SonosDevice, Subscription } from "../../../types";
 import axios from "axios";
 import PodcastList from "@/podcastList";
+import useAuthStore from "@/store/auth";
+import useStore from "@/store/useStore";
 type MenuItem = Required<MenuProps>["items"][number];
 
-export default function App() {
+export default function Page() {
   const [devices, setDevices] = useState<SonosDevice[]>([]);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [episodeIndex, setEpisodeIndex] = useState<number>(-1);
 
+  const { user, token } = useAuthStore();
+
   const items: MenuItem[] =
     subscriptions.length > 0
       ? subscriptions.map((subscription, index) => ({
-          key: index,
-          label: subscription.text,
-        }))
+        key: index,
+        label: subscription.text,
+      }))
       : [];
 
   const onMenuClick: MenuProps["onClick"] = (e) => {
@@ -39,8 +42,14 @@ export default function App() {
 
   useEffect(() => {
     const apiUrl = "http://localhost:3000/podcast/subscriptions";
-    axios
-      .get(apiUrl)
+
+    const queryParams = {
+      username: user,
+      sessionToken: token,
+    };
+
+    console.log("querying with params: ", queryParams)
+    axios.get(apiUrl, { params: queryParams })
       .then((response: { status: number; data: any }) => {
         if (response.status !== 200) {
           throw new Error("Network response was not ok");
@@ -60,8 +69,7 @@ export default function App() {
     console.log("getting devices");
     const apiUrl = "http://localhost:3000/sonos/devices";
     axios
-      .get(apiUrl)
-      .then((response: { status: number; data: any }) => {
+      .get(apiUrl).then((response: { status: number; data: any }) => {
         if (response.status !== 200) {
           throw new Error("Network response was not ok");
         }

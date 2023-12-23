@@ -5,21 +5,34 @@ import { SonosManager, SonosDevice } from '@svrooij/sonos';
 export class SonosService {
   private manager: SonosManager;
   private activeDevice: SonosDevice;
+  private is_init = false;
   constructor() {
-    this.manager = new SonosManager();
-    this.manager
-      .InitializeFromDevice('192.168.178.43')
-      .then(console.log)
-      .then(() => {
-        this.manager.Devices.forEach((d) =>
-          console.log(
-            'Device %s (%s) is joined in %s',
-            d.Name,
-            d.Uuid,
-            d.GroupName,
-          ),
-        );
-      });
+    try {
+      const host = '192.168.178.43';
+
+      this.manager = new SonosManager();
+      this.manager
+        .InitializeFromDevice(host)
+        .then(console.log)
+        .then(() => {
+          this.manager.Devices.forEach((d) =>
+            console.log(
+              'Device %s (%s) is joined in %s',
+              d.Name,
+              d.Uuid,
+              d.GroupName,
+            ),
+          );
+        })
+        .catch((error) => {
+          console.log('something went wrong..:', error);
+          this.is_init = false;
+        });
+      this.is_init = true;
+    } catch (error) {
+      console.log('something went wrong..:', error);
+      this.is_init = false;
+    }
   }
 
   async playPodcast(url: string): Promise<string> {
@@ -34,6 +47,9 @@ export class SonosService {
   async getDevices(): Promise<
     { name: string; groupname: string; uuid: string }[]
   > {
+    if (!this.is_init) {
+      return [];
+    }
     const sonosDevices = this.manager.Devices;
 
     const devicesInfo: { name: string; groupname: string; uuid: string }[] =
@@ -66,13 +82,3 @@ export class SonosService {
     else return ''; // TODO CHECKME!
   }
 }
-//socast-backend-1          | Device Küche (RINCON_38420B934AAC01400) is joined in Küche
-//socast-backend-1          | Device Büro (RINCON_7828CAD174E001400) is joined in Büro
-//socast-backend-1          | Device Esszimmer (RINCON_38420B9388F601400) is joined in Esszimmer
-//socast-backend-1          | Device Hauptschlafzimmer (RINCON_F0F6C12EF90401400) is joined in Hauptschlafzimmer
-
-//socast-backend-1          | Device Küche (RINCON_38420B934AAC01400) is joined in Küche
-//socast-backend-1          | Device Büro (RINCON_7828CAD174E001400) is joined in Büro
-//socast-backend-1          | Device Esszimmer (RINCON_38420B9388F601400) is joined in Esszimmer
-//socast-backend-1          | Device Hauptschlafzimmer (RINCON_F0F6C12EF90401400) is joined in Hauptschlafzimmer
-//socast-backend-1          | Device Sonos Roam SL (RINCON_F0F6C13DD3CE01400) is joined in Sonos Roam SL

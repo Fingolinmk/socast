@@ -17,9 +17,7 @@ export class SonosController {
     if (body.url !== '') {
       return this.podcastService.playPodcast(body.url);
     } else {
-      return this.podcastService.playPodcast(
-        'https://download.deutschlandfunk.de/file/dradio/2023/09/27/der_tag_270923_dlf_20230927_1700_af1801b7.mp3',
-      );
+      return 'No Podcast URL Found';
     }
   }
 

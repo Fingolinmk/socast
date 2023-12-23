@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ConfigProvider, Layout } from "antd";
+import { Avatar, ConfigProvider, Layout } from "antd";
 import { Header } from "antd/es/layout/layout";
-import Title from "antd/es/typography/Title";
+import UserIcon from "@/components/userIcon";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -31,12 +31,34 @@ export default function RootLayout({
               style={{
                 borderBottom: "1px solid #e8e8e8",
                 width: "100%",
-                textAlign: "left",
+                display: "flex",
+                alignContent: "space-around",
                 boxShadow: "0 1px 0px 0 #f0f0f0, 0 1px 0px 0 #f0f0f0",
                 backgroundColor: "white",
               }}
             >
-              <Title>Socast</Title>
+              <h1
+                style={{
+                  display: "flex",
+                  textAlign: "left",
+                  alignItems: " center",
+                  width: "10%",
+                }}
+              >
+                Socast
+              </h1>
+              <div
+                style={{
+                  width: "80%",
+                }}
+              ></div>
+              <div
+                style={{
+                  width: "10%",
+                }}
+              >
+                <UserIcon />
+              </div>
             </Header>
           </Layout>
           {children}

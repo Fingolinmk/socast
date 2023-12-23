@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
+import { addresses } from 'src/helpers';
 import { parseString } from 'xml2js';
 import { PodcastDescription, Subscription, podcastRssResponse } from './types';
 
@@ -8,7 +9,7 @@ let rssparser = new RssParser();
 @Injectable()
 export class PodcastService {
   private client: AxiosInstance;
-  private sessionCookie: string = '';
+  //  private sessionCookie: string = '';
   private subscriptions: Subscription[] = [];
   constructor() {
     this.client = axios.create();
@@ -27,8 +28,8 @@ export class PodcastService {
   async getTitleFrom(url): Promise<string> {
     try {
       const response = await axios.get(url);
-      const xmlContent = response.data;
-      const data = (await this.parseXml(xmlContent)) as any;
+      const data = (await this.parseXml(response.data)) as any;
+      console.log(data.rss.channel.title)
       return data.rss.channel.title;
     } catch (error) {
       console.error(`Error fetching or parsing XML for ${url}:`, error.message);
@@ -44,17 +45,12 @@ export class PodcastService {
   }
 
   async getEpisodesByID(id: number): Promise<podcastRssResponse> {
-    console.log('getEpisodesByID');
     const findings = this.subscriptions.filter(
       (subscriptions) => subscriptions.id == id,
     );
     if (findings.length == 1) {
       try {
         const results = await rssparser.parseURL(findings[0].url);
-        for (const i in results) {
-          console.log(i);
-        }
-
         const result_typed: podcastRssResponse = {
           title: results.title,
           image: results.image.url,
@@ -71,46 +67,44 @@ export class PodcastService {
         console.log('error in getEpisodebyID: ', error);
       }
     } else {
-      console.log('findings: ', findings);
+      console.log('multiple findings: ', findings);
     }
   }
-  async login(username: string, password: string) {
+  async login(username: string, password: string): Promise<{ token?: string }> {
+
     try {
-      const response = await this.client.post(
-        `http://192.168.178.27:3005/api/2/auth/${username}/login.json`,
-        null,
-        {
-          auth: {
-            username: username,
-            password: password,
-          },
+      const address = `${addresses.gpodder}/api/2/auth/${username}/login.json`;
+      const response = await this.client.post(address, null, {
+        auth: {
+          username: username,
+          password: password,
         },
-      );
+      });
 
       if (response.status === 200) {
+        let sessionToken = ''
         const cookies = response.headers['set-cookie'];
         if (Array.isArray(cookies)) {
           for (const cookie of cookies) {
-            this.sessionCookie += cookie + '; ';
+            sessionToken += cookie + '; ';
           }
         }
-        console.log('Logged in successfully. Session cookie set.');
-        console.log(this.sessionCookie);
+        console.log('Logged in successfully. Session cookie set to: ', sessionToken);
+
+        return { "token": sessionToken }
       }
     } catch (error) {
       console.error('Login failed:', error);
     }
   }
-  async getDevices(username: string) {
+  async getDevices(username: string, sessionToken: string) {
     try {
-      const response = await this.client.get(
-        `http://192.168.178.27:3005/api/2/devices/${username}.json`,
-        {
-          headers: {
-            Cookie: this.sessionCookie,
-          },
+      const address = addresses.gpodder + '/api/2/devices/${username}.json';
+      const response = await this.client.get(address, {
+        headers: {
+          Cookie: sessionToken,
         },
-      );
+      });
 
       if (response.status === 200) {
         return response.data;
@@ -120,42 +114,22 @@ export class PodcastService {
     }
   }
 
-  async getSubcriptions(username: string): Promise<Subscription[]> {
+  async getSubcriptions(username: string, sessionToken: string): Promise<Subscription[]> {
     try {
-      const response = await this.client.get(
-        `http://192.168.178.27:3005/subscriptions/${username}.json`,
-        {
-          headers: {
-            Cookie: this.sessionCookie,
-          },
-        },
-      );
-
-      if (response.status === 200) {
-        return this.parseSubscriptions(response.data);
-      }
-    } catch (error) {
-      console.error('Failed to retrieve subscriptions:', error);
-    }
-  }
-  async getStuff(username: string) {
-    // TEST FUNCTION
-    try {
-      //`http://192.168.178.27:3005/api/2/episodes/${username}.json`
-      const url = 'http://192.168.178.27:3005/api/2/episodes/moritz.json';
-      const response = await this.client.get(url, {
+      const address = addresses.gpodder + `/subscriptions/${username}.json`;
+      const response = await this.client.get(address, {
         headers: {
-          Cookie: this.sessionCookie,
+          Cookie: sessionToken,
         },
-        data: { podcast: 'https://ukw.fm/feed/mp3/' },
       });
 
       if (response.status === 200) {
-        console.log(response);
-        return response.data;
+        console.log("got subscriptons: ", response.data)
+        return this.parseSubscriptions(response.data);
+
       }
     } catch (error) {
-      console.error('Failed to retrieve episodes:', error);
+      console.error('Failed to retrieve subscriptions:', error);
     }
   }
 }

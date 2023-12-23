@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { PodcastDescription, SubscriptionDetail } from "./types";
-import PodcastHero from "./app/episodeHero";
+import PodcastHero from "./components/episodeHero";
 import { Button, List } from "antd";
 import { PlayCircleOutlined, CustomerServiceOutlined } from "@ant-design/icons";
 import Paragraph from "antd/es/typography/Paragraph";
