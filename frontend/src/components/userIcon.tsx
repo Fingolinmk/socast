@@ -9,8 +9,7 @@ const UserIcon: React.FC = () => {
   const { user } = useAuthStore();
   const router = useRouter();
   const onIconClick = () => {
-    console.log("navigate to user");
-    router.push("/user");
+    router.push("/start/user");
   };
 
   return (

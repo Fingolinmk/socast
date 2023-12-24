@@ -32,7 +32,6 @@ export default function Page() {
 
   const onMenuClick: MenuProps["onClick"] = (e) => {
     const index: number = +e.key;
-    console.log("index:", index)
 
     const subscription = subscriptions.find((sub: Subscription) => sub.id === index);
     const url = subscription ? subscription.url : undefined;
@@ -67,7 +66,6 @@ export default function Page() {
         return response.data;
       })
       .then((responsepodcasts: any) => {
-        console.log("response: ", responsepodcasts);
         setSubscriptions(responsepodcasts);
         setIsLoading(false)
       })

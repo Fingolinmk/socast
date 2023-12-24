@@ -36,8 +36,6 @@ export class PodcastService {
     }
   }
   async parseSubscriptions(subscription_urls: string[]): Promise<Subscription[]> {
-    console.log("parsing subscriptions: ", subscription_urls);
-    console.log("number of subscriptions: ", subscription_urls.length);
 
     const return_me: Subscription[] = await Promise.all(
       subscription_urls.map(async (url, index) => {
@@ -53,58 +51,16 @@ export class PodcastService {
         } else {
           const elm = elm_in_cache[0];
           elm.id = index;
-          console.log("adding element FROM cache: ", elm_in_cache[0]);
 
           return elm;
         }
       })
     );
 
-    console.log("returning: ", return_me);
-    console.log("cache: ", this.cache);
-    console.log("done");
+
     return return_me;
   }
-  async parseSubscriptions_old(subscription_urls: string[]): Promise<Subscription[]> {
-    console.log("parsing subscriptions: ", subscription_urls)
-    console.log("number of subscriptions: ", subscription_urls.length)
-    const return_me: Subscription[] = []
-    subscription_urls.forEach(async (url, index) => {
-      const elm_in_cache = this.cache.filter(
-        (cache) => cache.url == url,
-      )
-      if (elm_in_cache.length < 1) {
-        const new_elm = { title: await this.getTitleFrom(url), url: url, id: index }
-        console.log("adding new element to cache: ", new_elm)
-        this.cache.push(new_elm)
-        return_me.push(new_elm)
-        console.log(return_me.length, " / ", subscription_urls.length)
-      }
-      else {
-        const elm = elm_in_cache[0]
-        elm.id = index
-        return_me.push(elm_in_cache[0])
-        console.log("adding element FROM cache: ", elm_in_cache[0])
-        console.log(return_me.length, " / ", subscription_urls.length)
-      }
 
-    });
-    console.log("returning: ", return_me)
-    console.log("cache: ", this.cache)
-    console.log("done")
-    return return_me
-
-
-
-    /* this.subscriptions = await Promise.all(
-       subscription_urls.map(async (elm, index) => {
-         const title = await this.getTitleFrom(elm);
-         return { text: title, url: elm, id: index };
-       }),
-     );
-     return this.subscriptions;
-     */
-  }
   async getEpisodesByURL(url: string): Promise<podcastRssResponse> {
     try {
       const results = await rssparser.parseURL(url);

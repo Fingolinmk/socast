@@ -20,7 +20,6 @@ export default function Page() {
 
     try {
       const endpoint = "http://localhost:3000/podcast/login";
-      console.log("trying to login at: ", endpoint);
 
       interface ApiResponse {
         sessionToken: string;
@@ -75,9 +74,7 @@ export default function Page() {
     user?: string;
     password?: string;
   };
-  console.log("The Cookie is: ", token)
   if (token) {
-    console.log("I have a valid token: ", token);
     return (
       <div>
         <Row justify="center" align="middle">

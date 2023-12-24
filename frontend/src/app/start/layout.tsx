@@ -9,8 +9,6 @@ export default function Layout({ children }) {
     const router = useRouter();
     const currentRoute = usePathname()
     const defaultActiveKey = currentRoute.split("/")[2] // todo remove magic number bs
-    console.log("route: ", currentRoute)
-    console.log("active key: ", defaultActiveKey)
     const items: TabsProps['items'] = [
         {
             key: 'user',
@@ -27,8 +25,6 @@ export default function Layout({ children }) {
     ];
 
     const onChange = (key: string) => {
-        console.log("key: ", key);
-
         router.push(`/start/${key}`);
 
     };

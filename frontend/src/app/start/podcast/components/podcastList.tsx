@@ -19,7 +19,6 @@ export default function PodcastList({ index, podcastUrl }: { index: number; podc
   };
   useEffect(() => {
     setIsLoading(true)
-    console.log("loading...")
     if (index > -1) {
       const apiUrl = "http://localhost:3000/podcast/episodes/byUrl/"
       axios
@@ -35,7 +34,7 @@ export default function PodcastList({ index, podcastUrl }: { index: number; podc
           setSelectedSubScription({
             id: index,
             url: "",
-            text: responsepodcasts.title,
+            title: responsepodcasts.title,
             description: responsepodcasts.description,
             image: responsepodcasts.image,
           });
@@ -44,12 +43,11 @@ export default function PodcastList({ index, podcastUrl }: { index: number; podc
           console.error("Error fetching podcasts:", error);
         });
     }
-    console.log("loading done")
     setIsLoading(false)
   }, [index]);
   const [selectedSubScription, setSelectedSubScription] =
     useState<SubscriptionDetail>({
-      text: "",
+      title: "",
       url: "",
       description: "",
       image: "",
