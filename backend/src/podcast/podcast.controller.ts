@@ -21,17 +21,18 @@ export class PodcastController {
     : Promise<Subscription[]> {
     return this.podcastService.getSubcriptions(username, sessionToken);
   }
-  @Get('episodes/byid/:id')
-  getEpisodes(@Param('id') id: number): Promise<podcastRssResponse> {
-    console.log("GET EPISODES BY ID")
-    const episodes = this.podcastService.getEpisodesByID(id);
-    return episodes;
-  }
   @Get('episodes/byUrl')
   getEpisodesByUrl(@Query('url') url: string): Promise<podcastRssResponse> {
     console.log("GET EPISODES BY URL!", url)
     const episodes = this.podcastService.getEpisodesByURL(url);
     return episodes;
+  }
+
+  @Get('episodes/actions')
+  async getEpisodeActions(@Query('url') url: string, @Query('user') user: string, @Query('sessionToken') sessionToken: string): Promise<String> {
+    const actions = await this.podcastService.getEpisodeActions(user, url, sessionToken)
+    //console.log(actions)
+    return actions
   }
 
 }

@@ -6,33 +6,32 @@ services:
       context: ./micro-gpodder-server
       dockerfile: Dockerfile
     volumes:
-      - type: bind
-        source: ./micro-gpodder-server/docker_volume/data.sqlite
-        target: /var/www/html/data.sqlite:Z # `:Z`` is important
-    hostname: 192.168.178.70 # 192.168.178.27
+      - ./micro-gpodder-server/docker_volume:/var/www/html/
+    hostname: 192.168.178.70
     ports:
       - 3005:80
 
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    restart: always
-    ports:
-      - "3000:3000"
-    depends_on:
-      - gpodder-service
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3001:3001"
-    depends_on:
-      - backend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+#  backend:
+#    build:
+#      context: ./backend
+#      dockerfile: Dockerfile
+#    restart: always
+#    ports:
+#      - "3000:3000"
+#    depends_on:
+#      - gpodder-service
+#    volumes:
+#      - ./backend:/app
+#      - /app/node_modules##
+
+#  frontend:
+#    build:
+#      context: ./frontend
+#      dockerfile: Dockerfile
+#    ports:
+#      - "3001:3001"
+#    depends_on:
+#      - backend
+#    volumes:
+#      - ./frontend:/app
+#      - /app/node_modules

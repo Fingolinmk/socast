@@ -5,12 +5,11 @@ import { parseString } from 'xml2js';
 import { PodcastDescription, Subscription, podcastRssResponse } from './types';
 
 const RssParser = require('rss-parser');
-let rssparser = new RssParser();
+let rssparser = new RssParser({ timeout: 35000 });
 @Injectable()
 export class PodcastService {
   private client: AxiosInstance;
-  private cache: Subscription[] = []; // TODO -> database
-  private subscriptions: Subscription[] = []; // This is ugly (and will not work for multiple users)
+  private cache: Subscription[] = [];
   constructor() {
     this.client = axios.create();
   }
@@ -32,7 +31,7 @@ export class PodcastService {
     }
     catch (error) {
       console.error(`Error fetching or parsing XML for ${url}:`, error.message);
-      return '~Could not find title~';
+      return 'undefined';
     }
   }
   async parseSubscriptions(subscription_urls: string[]): Promise<Subscription[]> {
@@ -41,17 +40,17 @@ export class PodcastService {
       subscription_urls.map(async (url, index) => {
         const elm_in_cache = this.cache.filter((cache) => cache.url === url);
 
-        if (elm_in_cache.length < 1 || elm_in_cache[0].title === "~Could not find title~") {
+        if (elm_in_cache.length < 1 || elm_in_cache[0].title === "undefined") {
           const title = await this.getTitleFrom(url)
           const new_elm: Subscription = { title: title, url: url, id: index };
-          console.log("adding new element to cache: ", new_elm);
+          //console.log("adding new element to cache: ", new_elm);
           this.cache.push(new_elm);
 
           return new_elm;
         } else {
           const elm = elm_in_cache[0];
           elm.id = index;
-
+          console.log("using cache: ", elm)
           return elm;
         }
       })
@@ -60,7 +59,27 @@ export class PodcastService {
 
     return return_me;
   }
+  async getEpisodeActions(username: string, url: string, sessionToken: string): Promise<any> {
+    console.log("Get episode actions, token; ", sessionToken, "user: ", username, "podcastURL", url)
+    try {
+      const address = addresses.gpodder + `/api/2/episodes/${username}.json`;
+      const response = await this.client.get(address, {
+        headers: {
+          Cookie: sessionToken,
+        },
+        params: {
+          podcast: url,
+          aggregated: true
+        }
+      });
 
+      if (response.status === 200) {
+        return response.data;
+      }
+    } catch (error) {
+      console.error('Failed to retrieve devices:', error);
+    }
+  }
   async getEpisodesByURL(url: string): Promise<podcastRssResponse> {
     try {
       const results = await rssparser.parseURL(url);
@@ -77,19 +96,10 @@ export class PodcastService {
       };
       return result_typed;
     } catch (error) {
-      console.log('error in getEpisodebyID: ', error);
+      console.log('error in getEpisodebyURL: ', error);
     }
   }
-  async getEpisodesByID(id: number): Promise<podcastRssResponse> {
-    const findings = this.subscriptions.filter(
-      (subscriptions) => subscriptions.id == id,
-    );
-    if (findings.length == 1) {
-      return this.getEpisodesByURL(findings[0].url)
-    } else {
-      console.log('multiple findings: ', findings);
-    }
-  }
+
   async login(username: string, password: string): Promise<{ token?: string }> {
 
     try {
