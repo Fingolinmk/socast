@@ -16,4 +16,5 @@ export interface podcastRssResponse {
   items: PodcastDescription[];
   image: string;
   description: string;
+  url: string;
 }

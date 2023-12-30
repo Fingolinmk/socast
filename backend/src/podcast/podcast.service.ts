@@ -43,14 +43,12 @@ export class PodcastService {
         if (elm_in_cache.length < 1 || elm_in_cache[0].title === "undefined") {
           const title = await this.getTitleFrom(url)
           const new_elm: Subscription = { title: title, url: url, id: index };
-          //console.log("adding new element to cache: ", new_elm);
           this.cache.push(new_elm);
 
           return new_elm;
         } else {
           const elm = elm_in_cache[0];
           elm.id = index;
-          console.log("using cache: ", elm)
           return elm;
         }
       })
@@ -69,11 +67,12 @@ export class PodcastService {
         },
         params: {
           podcast: url,
-          aggregated: true
+          aggregated: false
         }
       });
 
       if (response.status === 200) {
+        console.log("action answer: ", response.data)
         return response.data;
       }
     } catch (error) {
@@ -86,6 +85,7 @@ export class PodcastService {
       const result_typed: podcastRssResponse = {
         title: results.title,
         image: results.image.url,
+        url: url,
         items: results.items.map((itm) => ({
           name: itm.title,
           url: itm.enclosure.url || '',
@@ -119,7 +119,6 @@ export class PodcastService {
             sessionToken += cookie + '; ';
           }
         }
-        console.log('Logged in successfully. Session cookie set to: ', sessionToken);
 
         return { "token": sessionToken }
       }

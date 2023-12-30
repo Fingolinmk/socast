@@ -6,32 +6,35 @@ services:
       context: ./micro-gpodder-server
       dockerfile: Dockerfile
     volumes:
-      - ./micro-gpodder-server/docker_volume:/var/www/html/
-    hostname: 192.168.178.70
+      - ./micro-gpodder-server/docker_volume:/var/www/html/database
+    hostname: 192.168.178.27
     ports:
       - 3005:80
+    command: /usr/local/bin/setup.sh
 
-#  backend:
-#    build:
-#      context: ./backend
-#      dockerfile: Dockerfile
-#    restart: always
-#    ports:
-#      - "3000:3000"
-#    depends_on:
-#      - gpodder-service
-#    volumes:
-#      - ./backend:/app
-#      - /app/node_modules##
 
-#  frontend:
-#    build:
-#      context: ./frontend
-#      dockerfile: Dockerfile
-#    ports:
-#      - "3001:3001"
-#    depends_on:
-#      - backend
-#    volumes:
-#      - ./frontend:/app
-#      - /app/node_modules
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - gpodder-service
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules

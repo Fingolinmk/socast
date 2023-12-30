@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Skeleton } from "antd";
+import { Skeleton, Slider } from "antd";
 
 import { PodcastDescription, SubscriptionDetail } from "../../../../types";
 import PodcastHero from "../../../../components/episodeHero";
@@ -9,7 +9,13 @@ import { PlayCircleOutlined, CustomerServiceOutlined } from "@ant-design/icons";
 import Paragraph from "antd/es/typography/Paragraph";
 import useAuthStore from "@/store/auth";
 
-export default function PodcastList({ index, podcastUrl }: { index: number; podcastUrl: string }) {
+export default function PodcastList({
+  index,
+  podcastUrl,
+}: {
+  index: number;
+  podcastUrl: string;
+}) {
   const [podcasts, setPodcasts] = useState<PodcastDescription[]>([]);
   const [isLoading, setIsLoading] = useState<Boolean>(false);
   const [actionLoading, setactionLoading] = useState<Boolean>(false);
@@ -20,13 +26,15 @@ export default function PodcastList({ index, podcastUrl }: { index: number; podc
     console.log("Play res: ", res);
   };
   useEffect(() => {
-    setactionLoading(false)
+    setactionLoading(false);
     if (index > -1) {
-      const apiUrl = "http://localhost:3000/podcast/episodes/actions"
-      console.log("requesting podcast actions for: ")
-      console.log(podcastUrl)
+      const apiUrl = "http://localhost:3000/podcast/episodes/actions";
+      console.log("requesting podcast actions for: ");
+      console.log(podcastUrl);
       axios
-        .get(apiUrl, { params: { url: podcastUrl, user: user, sessionToken: token } }) //TODO, obviously
+        .get(apiUrl, {
+          params: { url: podcastUrl, user: user, sessionToken: token },
+        })
         .then((response: { status: number; data: any }) => {
           if (response.status !== 200) {
             throw new Error("Network response was not ok");
@@ -34,21 +42,20 @@ export default function PodcastList({ index, podcastUrl }: { index: number; podc
           return response.data;
         })
         .then((response: any) => {
-          console.log(response)
+          console.log("got response of: ", response);
         })
         .catch((error: any) => {
           console.error("Error fetching podcasts:", error);
         });
+    } else {
+      console.log("index", index);
     }
-    else { console.log("index", index) }
-  }
-    , [index]);
-
+  }, [index]);
 
   useEffect(() => {
-    setIsLoading(true)
+    setIsLoading(true);
     if (index > -1) {
-      const apiUrl = "http://localhost:3000/podcast/episodes/byUrl/"
+      const apiUrl = "http://localhost:3000/podcast/episodes/byUrl/";
       axios
         .get(apiUrl, { params: { url: podcastUrl } })
         .then((response: { status: number; data: any }) => {
@@ -61,7 +68,7 @@ export default function PodcastList({ index, podcastUrl }: { index: number; podc
           setPodcasts(responsepodcasts.items);
           setSelectedSubScription({
             id: index,
-            url: "",
+            url: responsepodcasts.url,
             title: responsepodcasts.title,
             description: responsepodcasts.description,
             image: responsepodcasts.image,
@@ -71,7 +78,7 @@ export default function PodcastList({ index, podcastUrl }: { index: number; podc
           console.error("Error fetching podcasts:", error);
         });
     }
-    setIsLoading(false)
+    setIsLoading(false);
   }, [index]);
   const [selectedSubScription, setSelectedSubScription] =
     useState<SubscriptionDetail>({
@@ -82,33 +89,39 @@ export default function PodcastList({ index, podcastUrl }: { index: number; podc
       id: 0,
     });
 
-  return (
-    isLoading ? <Skeleton loading={true} active > </Skeleton> :
-      <List
-        size="large"
-        header={PodcastHero(selectedSubScription)}
-        footer={<div>Footer</div>}
-        bordered
-        dataSource={podcasts}
-        renderItem={(item: PodcastDescription) => (
-          <List.Item>
-            <List.Item.Meta
-              avatar={<CustomerServiceOutlined />}
-              title={item.name}
-              description={
+  return isLoading ? (
+    <Skeleton loading={true} active>
+      {" "}
+    </Skeleton>
+  ) : (
+    <List
+      size="large"
+      header={PodcastHero(selectedSubScription)}
+      footer={<div>Footer</div>}
+      bordered
+      dataSource={podcasts}
+      renderItem={(item: PodcastDescription) => (
+        <List.Item>
+          <List.Item.Meta
+            avatar={<CustomerServiceOutlined />}
+            title={item.name}
+            description={
+              <div>
                 <Paragraph ellipsis={true}>{item.description}</Paragraph>
-              }
+                <Slider defaultValue={item.progress} />
+              </div>
+            }
+          />
+          <div>
+            <Button
+              type="default"
+              shape="circle"
+              icon={<PlayCircleOutlined />}
+              onClick={() => handlePlay(item)}
             />
-            <div>
-              <Button
-                type="default"
-                shape="circle"
-                icon={<PlayCircleOutlined />}
-                onClick={() => handlePlay(item)}
-              />
-            </div>
-          </List.Item>
-        )}
-      />
+          </div>
+        </List.Item>
+      )}
+    />
   );
 }

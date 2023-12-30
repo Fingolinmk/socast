@@ -23,7 +23,6 @@ export class PodcastController {
   }
   @Get('episodes/byUrl')
   getEpisodesByUrl(@Query('url') url: string): Promise<podcastRssResponse> {
-    console.log("GET EPISODES BY URL!", url)
     const episodes = this.podcastService.getEpisodesByURL(url);
     return episodes;
   }
@@ -31,7 +30,7 @@ export class PodcastController {
   @Get('episodes/actions')
   async getEpisodeActions(@Query('url') url: string, @Query('user') user: string, @Query('sessionToken') sessionToken: string): Promise<String> {
     const actions = await this.podcastService.getEpisodeActions(user, url, sessionToken)
-    //console.log(actions)
+    //console.log("podcast actions: ", actions)
     return actions
   }
 

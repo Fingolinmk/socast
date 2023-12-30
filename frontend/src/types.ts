@@ -4,6 +4,8 @@ export interface PodcastDescription {
   url: string;
   imageUrl: string;
   description: string;
+  progress:number;
+  length:number;
 }
 export interface SonosDevice {
   name: string;
