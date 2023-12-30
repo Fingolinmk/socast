@@ -30,7 +30,6 @@ export class PodcastController {
   @Get('episodes/actions')
   async getEpisodeActions(@Query('url') url: string, @Query('user') user: string, @Query('sessionToken') sessionToken: string): Promise<String> {
     const actions = await this.podcastService.getEpisodeActions(user, url, sessionToken)
-    //console.log("podcast actions: ", actions)
     return actions
   }
 

@@ -5,7 +5,7 @@ export interface PodcastDescription {
   imageUrl: string;
   description: string;
   progress:number;
-  length:number;
+  total:number;
 }
 export interface SonosDevice {
   name: string;

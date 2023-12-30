@@ -72,8 +72,13 @@ export class PodcastService {
       });
 
       if (response.status === 200) {
-        console.log("action answer: ", response.data)
-        return response.data;
+      //  console.log("action answer: ", response.data)
+      //const result=response.data.actions
+
+        const result = response.data.actions.filter((elm) => elm.podcast == url);
+        console.log(result)  
+        console.log("url: ", url)
+        return result;
       }
     } catch (error) {
       console.error('Failed to retrieve devices:', error);

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Skeleton, Slider } from "antd";
+import { Skeleton, Slider, Progress } from "antd";
 
 import { PodcastDescription, SubscriptionDetail } from "../../../../types";
 import PodcastHero from "../../../../components/episodeHero";
@@ -25,12 +25,11 @@ export default function PodcastList({
     const res = axios.post(apiUrl, { url: item.url });
     console.log("Play res: ", res);
   };
-  useEffect(() => {
-    setactionLoading(false);
+  const loadActions = (podcasts: PodcastDescription[]) => {
+    setactionLoading(true);
     if (index > -1) {
       const apiUrl = "http://localhost:3000/podcast/episodes/actions";
-      console.log("requesting podcast actions for: ");
-      console.log(podcastUrl);
+      console.log("requesting podcast actions for: ", podcastUrl);
       axios
         .get(apiUrl, {
           params: { url: podcastUrl, user: user, sessionToken: token },
@@ -43,17 +42,33 @@ export default function PodcastList({
         })
         .then((response: any) => {
           console.log("got response of: ", response);
+          console.log("podcsts:", podcasts);
+
+          response.forEach((resp: any) => {
+            const elm = podcasts.filter(
+              (podca) => podca.url === decodeURIComponent(resp.episode)
+            );
+            if (elm.length > 1) {
+              console.log("more than one in filter? : ", elm);
+            }
+            if (elm.length === 1) {
+              elm[0].total = resp.total;
+              elm[0].progress = resp.position;
+            } else {
+              console.log("no match");
+            }
+          });
+          console.log("podcasts: ", podcasts);
+          setPodcasts(podcasts);
         })
         .catch((error: any) => {
           console.error("Error fetching podcasts:", error);
         });
-    } else {
-      console.log("index", index);
     }
-  }, [index]);
 
-  useEffect(() => {
-    setIsLoading(true);
+    setactionLoading(false);
+  };
+  const loadPodcasts = () => {
     if (index > -1) {
       const apiUrl = "http://localhost:3000/podcast/episodes/byUrl/";
       axios
@@ -65,7 +80,6 @@ export default function PodcastList({
           return response.data;
         })
         .then((responsepodcasts: any) => {
-          setPodcasts(responsepodcasts.items);
           setSelectedSubScription({
             id: index,
             url: responsepodcasts.url,
@@ -73,11 +87,17 @@ export default function PodcastList({
             description: responsepodcasts.description,
             image: responsepodcasts.image,
           });
+          loadActions(responsepodcasts.items);
         })
         .catch((error: any) => {
           console.error("Error fetching podcasts:", error);
         });
     }
+  };
+  useEffect(() => {
+    setIsLoading(true);
+    loadPodcasts();
+
     setIsLoading(false);
   }, [index]);
   const [selectedSubScription, setSelectedSubScription] =
@@ -88,7 +108,6 @@ export default function PodcastList({
       image: "",
       id: 0,
     });
-
   return isLoading ? (
     <Skeleton loading={true} active>
       {" "}
@@ -108,10 +127,11 @@ export default function PodcastList({
             description={
               <div>
                 <Paragraph ellipsis={true}>{item.description}</Paragraph>
-                <Slider defaultValue={item.progress} />
+                <Slider min={0} max={item.total} defaultValue={item.progress} />
               </div>
             }
           />
+
           <div>
             <Button
               type="default"
