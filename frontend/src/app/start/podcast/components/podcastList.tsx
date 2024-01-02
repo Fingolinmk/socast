@@ -22,8 +22,17 @@ export default function PodcastList({
   const { user, token } = useAuthStore();
   const handlePlay = (item: PodcastDescription) => {
     const apiUrl = "http://localhost:3000/sonos/play";
-    const res = axios.post(apiUrl, { url: item.url });
-    console.log("Play res: ", res);
+    if (item.progress && item.progress < item.total) {
+      console.log("trying to play with position...");
+      const res = axios.post(apiUrl, {
+        url: item.url,
+        position: item.progress,
+      });
+      console.log("play, res: ", res);
+    } else {
+      const res = axios.post(apiUrl, { url: item.url });
+      console.log("play, res: ", res);
+    }
   };
   const loadActions = (podcasts: PodcastDescription[]) => {
     setactionLoading(true);

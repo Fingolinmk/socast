@@ -13,9 +13,9 @@ export class SonosController {
   constructor(private readonly podcastService: SonosService) {}
 
   @Post('play')
-  async play(@Body() body: { url: string }): Promise<string> {
+  async play(@Body() body: { url: string,position?: number }): Promise<string> {
     if (body.url !== '') {
-      return this.podcastService.playPodcast(body.url);
+      return this.podcastService.playPodcast(body.url, body.position);
     } else {
       return 'No Podcast URL Found';
     }

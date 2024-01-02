@@ -33,10 +33,32 @@ export class SonosService {
       this.is_init = false;
     }
   }
-
-  async playPodcast(url: string): Promise<string> {
+  padZero(num: number): string {
+   return num < 10 ? `0${num}` : `${num}`;
+ }
+   formatPosition(seconds: number): string {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+  
+    const formattedTime = `${this.padZero(hours)}:${this.padZero(minutes)}:${this.padZero(remainingSeconds)}`;
+    return formattedTime;
+  }
+  
+  async playPodcast(url: string, position?: number): Promise<string> {
+    console.log("play podcast: url: ", url,"position: ", position)
     try {
-      this.activeDevice.PlayNotification({ trackUri: url });
+      
+      if (position){
+        const form_pos=this.formatPosition(position)
+        const add_uri_res= await this.activeDevice.AddUriToQueue(url,0,true)
+        console.log(add_uri_res)
+        const res=await this.activeDevice.SeekPosition(form_pos)
+        this.activeDevice.Play()
+      }
+      else {
+        this.activeDevice.PlayNotification({ trackUri: url });
+      }
       return `Playing podcast from URL: ${url}`;
     } catch (error) {
       throw new Error(`Failed to play podcast: ${error.message}`);
